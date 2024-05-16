@@ -17,10 +17,17 @@ public class Principal {
     public void iniciar(){
         var opcionMenu = -1;
         var menu = """
-                1 -> Consultar Libro
-                2 -> Consultar Autor
-                3 -> Libros por Idioma
-                4 -> Autores Vivos por X Año
+                -------------------------------------------
+                    Bienvenido al sistema de Literalura
+                -------------------------------------------
+                            Seleccione una opcion:
+                -------------------------------------------
+
+                1 -> Consultar libro por titulo
+                2 -> Listar libros registrados
+                3 -> Listar autores registrados
+                4 -> Listar autores vivos por X año
+                5 -> Listar libros por idioma
 
                 0 -> Salir
                 """;
@@ -30,23 +37,34 @@ public class Principal {
         teclado.nextLine();
 
         switch (opcionMenu) {
+            case 0:
+                System.out.println("\nCerrando aplicacion...");
+                break;
             case 1:
                 consultarLibro();
                 break;
             case 2:
-                consultarAutor();
+                listarLibros();
                 break;
             case 3:
-                consultarLibrosPorIdioma();
+                listarAutores();
                 break;
             case 4:
                 consultarAutoresVivosPorAnio();
                 break;
+            case 5:
+                consultarLibrosPorIdioma();
+                break;
             default:
-                System.out.println("Opcion Invalida");;
+                System.out.println("Opcion Invalida");
         }
     }
     
+    private void listarLibros() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'listarLibros'");
+    }
+
     private void consultarAutoresVivosPorAnio() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'consultarAutoresVivosPorAnio'");
@@ -57,9 +75,9 @@ public class Principal {
         throw new UnsupportedOperationException("Unimplemented method 'consultarLibrosPorIdioma'");
     }
 
-    private void consultarAutor() {
+    private void listarAutores() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'consultarAutor'");
+        throw new UnsupportedOperationException("Unimplemented method 'listarAutores'");
     }
 
     private void consultarLibro() {
@@ -72,10 +90,25 @@ public class Principal {
             .findFirst();
     
         if (libroBuscado.isPresent()) {
-            System.out.println("Libro encontrado: ");
-            System.out.println(libroBuscado.get());
+            System.out.println("\nLibro encontrado:\n");
+            //System.out.println(libroBuscado.get());
+            var muestraLibro = """
+                    -------------------------
+                        Datos del Libro
+                    -------------------------
+                    Titulo   : %s
+                    Autor    : %s
+                    Idiomas  : %s
+                    Descargas: %s
+                    """;
+            System.out.println(muestraLibro.formatted(
+                libroBuscado.get().titulo(), 
+                libroBuscado.get().autor().get(0).nombre(), 
+                libroBuscado.get().idioma().get(0), 
+                libroBuscado.get().numeroDescargas()
+            ));
         } else {
-            System.out.println("No se ha encontrado el libro");
+            System.out.println("No se ha encontrado el libro\n");
         }        
     }
 }
