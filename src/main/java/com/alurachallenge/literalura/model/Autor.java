@@ -1,9 +1,8 @@
 package com.alurachallenge.literalura.model;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -11,27 +10,31 @@ import jakarta.persistence.Table;
 @Table(name = "autores")
 public class Autor {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idAutor;
+    private Long idLibro;
     private String nombre;
-    private String fechaNacimiento;
-    private String fechaFallecimiento;
+    private String anioNacimiento;
+    private String anioFallecimiento;
 
     @OneToOne
+    @JoinColumn(name = "idLibro", nullable = false)
     private Libro libro;
 
-    public Autor(DatosAutor datosAutor){
+    public Autor(Long idLibro, DatosAutor datosAutor){
+        this.idLibro = idLibro;
         this.nombre = datosAutor.nombre();
-        this.fechaNacimiento = datosAutor.fechaNacimiento();
-        this.fechaFallecimiento = datosAutor.fechaFallecimiento();
+        this.anioNacimiento = datosAutor.anioNacimiento();
+        this.anioFallecimiento = datosAutor.anioFallecimiento();
     }
 
-    public Long getIdAutor() {
-        return idAutor;
+    public Autor() {
     }
 
-    public void setIdAutor(Long idAutor) {
-        this.idAutor = idAutor;
+    public Long getidLibro() {
+        return idLibro;
+    }
+
+    public void setidLibro(Long idLibro) {
+        this.idLibro = idLibro;
     }
 
     public String getNombre() {
@@ -42,20 +45,20 @@ public class Autor {
         this.nombre = nombre;
     }
 
-    public String getFechaNacimiento() {
-        return fechaNacimiento;
+    public String getAnioNacimiento() {
+        return anioNacimiento;
     }
 
-    public void setFechaNacimiento(String fechaNacimiento) {
-        this.fechaNacimiento = fechaNacimiento;
+    public void setAnioNacimiento(String anioNacimiento) {
+        this.anioNacimiento = anioNacimiento;
     }
 
-    public String getFechaFallecimiento() {
-        return fechaFallecimiento;
+    public String getAnioFallecimiento() {
+        return anioFallecimiento;
     }
 
-    public void setFechaFallecimiento(String fechaFallecimiento) {
-        this.fechaFallecimiento = fechaFallecimiento;
+    public void setAnioFallecimiento(String anioFallecimiento) {
+        this.anioFallecimiento = anioFallecimiento;
     }
 
     public Libro getLibro() {
