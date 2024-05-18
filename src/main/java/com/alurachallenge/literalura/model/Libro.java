@@ -29,6 +29,9 @@ public class Libro {
         this.numeroDescargas = datosLibro.numeroDescargas();
     }
 
+    public Libro() {
+    }
+
     public Long getIdLibro() {
         return idLibro;
     }
