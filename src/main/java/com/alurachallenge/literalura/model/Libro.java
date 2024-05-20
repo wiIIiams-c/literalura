@@ -1,11 +1,10 @@
 package com.alurachallenge.literalura.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -16,11 +15,12 @@ public class Libro {
 
     @Column(unique = true)
     private String titulo;
-
-    @OneToOne(mappedBy = "libro", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Autor autor;
     private String idioma;
     private Long numeroDescargas;
+
+    @ManyToOne
+    @JoinColumn(name = "idAutor", nullable = false)
+    private Autor autor;
 
     public Libro(DatosLibro datosLibro){
         this.idLibro = datosLibro.idLibro();
