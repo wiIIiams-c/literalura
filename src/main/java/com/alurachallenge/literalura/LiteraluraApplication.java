@@ -6,12 +6,16 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.alurachallenge.literalura.principal.Principal;
-import com.alurachallenge.literalura.repository.LibroRespository;
+import com.alurachallenge.literalura.repository.AutorRepository;
+import com.alurachallenge.literalura.repository.LibroRepository;
 
 @SpringBootApplication
 public class LiteraluraApplication implements CommandLineRunner{
 	@Autowired
-	private LibroRespository respository;
+	private LibroRepository repositoryLibro;
+
+	@Autowired
+	private AutorRepository repositoryAutor;
 
 	public static void main(String[] args) {
 		SpringApplication.run(LiteraluraApplication.class, args);
@@ -19,7 +23,7 @@ public class LiteraluraApplication implements CommandLineRunner{
 
 	@Override
 	public void run(String... args) throws Exception {
-		Principal principal = new Principal(respository);
+		Principal principal = new Principal(repositoryAutor, repositoryLibro);
 		principal.iniciar();
 	}
 
