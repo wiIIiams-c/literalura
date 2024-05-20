@@ -11,7 +11,8 @@ import com.alurachallenge.literalura.model.Datos;
 import com.alurachallenge.literalura.model.DatosAutor;
 import com.alurachallenge.literalura.model.DatosLibro;
 import com.alurachallenge.literalura.model.Libro;
-import com.alurachallenge.literalura.repository.LibroRespository;
+import com.alurachallenge.literalura.repository.AutorRepository;
+import com.alurachallenge.literalura.repository.LibroRepository;
 import com.alurachallenge.literalura.service.ConsumoAPI;
 import com.alurachallenge.literalura.service.ConvierteDatos;
 
@@ -20,11 +21,14 @@ public class Principal {
     private ConsumoAPI consumoApi = new ConsumoAPI();
     private ConvierteDatos conversor = new ConvierteDatos();
     private Scanner teclado = new Scanner(System.in);
-    private LibroRespository respository;
+    private LibroRepository repositoryLibro;
+    private AutorRepository repositoryAutor;
     private List<Libro> libros;
+    private Optional<Autor> autor;
 
-    public Principal(LibroRespository respository) {
-        this.respository = respository;
+    public Principal(AutorRepository repositoryAutor, LibroRepository repositoryLibro) {
+        this.repositoryAutor = repositoryAutor;
+        this.repositoryLibro = repositoryLibro;
     }
 
     public void iniciar(){
@@ -82,15 +86,15 @@ public class Principal {
     }
     
     private void listarLibros() {
-        libros = respository.findAll();
-        libros.forEach(l -> System.out.println(
-            datosLibro().formatted(
-                l.getTitulo(),
-                l.getAutor().getNombre(),
-                l.getIdioma(),
-                l.getNumeroDescargas()
-            )
-        ));
+        // libros = repository.findAll();
+        // libros.forEach(l -> System.out.println(
+        //     datosLibro().formatted(
+        //         l.getTitulo(),
+        //         l.getAutor().getNombre(),
+        //         l.getIdioma(),
+        //         l.getNumeroDescargas()
+        //     )
+        // ));
     }
 
     private void consultarAutoresVivosPorAnio() {
@@ -116,16 +120,17 @@ public class Principal {
         var datosBusqueda = conversor.obtenerDatos(json, Datos.class);
 
         Optional<DatosLibro> libroBuscado = datosBusqueda.libros().stream()
-            .filter(l -> l.titulo().toUpperCase().contains(nombreLibro.toUpperCase()))
+            .filter(l -> l.titulo().toLowerCase().contains(nombreLibro.toLowerCase()))
             .findFirst();
 
-        List<DatosAutor> datosAutor = libroBuscado.get().autor();
-        List<Autor> autores = datosAutor.stream()
-            .map(a -> new Autor(libroBuscado.get().idLibro(), a))
-            .collect(Collectors.toList());
+        DatosAutor datosAutor = libroBuscado.get().autor().get(0);
+        // List<Autor> autores = datosAutor.stream()
+        //     .map(a -> new Autor(a))
+        //     .collect(Collectors.toList());
     
         if (libroBuscado.isPresent()) {
             System.out.println("\nLibro encontrado:\n");
+
             
             System.out.println(datosLibro().formatted(
                 libroBuscado.get().titulo(), 
@@ -133,10 +138,29 @@ public class Principal {
                 libroBuscado.get().idioma().get(0), 
                 libroBuscado.get().numeroDescargas()
             ));
+            
+            // Libro libro = new Libro(libroBuscado.get());
+            // libro.setAutor(autores.get(0));
+            // repository.save(libro);
+            
+            //Esta parte valida previamente si el autor existe
+            //para guardar solo el libro en caso de que sea necesario
+            autor = repositoryAutor.findByNombre(datosAutor.nombre());
+            libros = libroBuscado.stream()
+                .map(l -> new Libro(l))
+                .collect(Collectors.toList());
 
-            Libro libro = new Libro(libroBuscado.get());
-            libro.setAutor(autores.get(0));
-            respository.save(libro);
+            if(autor.isPresent()){
+                Libro libro = new Libro(libroBuscado.get());
+                libro.setAutor(autor.get());
+                repositoryLibro.save(libro);
+            }else{
+                Autor autorClass = new Autor(datosAutor);
+                autorClass.setLibros(libros);
+                repositoryAutor.save(autorClass);
+            }
+
+            System.out.println("\n Se ha guardado el libro en la base de datos...\n");
         } else {
             System.out.println("No se ha encontrado el libro\n");
         }        
