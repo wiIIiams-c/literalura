@@ -23,6 +23,7 @@ public class Principal {
     private Scanner teclado = new Scanner(System.in);
     private LibroRepository repositoryLibro;
     private AutorRepository repositoryAutor;
+    private Libro libro;
     private List<Libro> libros;
     private Optional<Autor> autor;
 
@@ -86,20 +87,74 @@ public class Principal {
     }
     
     private void listarLibros() {
-        // libros = repository.findAll();
-        // libros.forEach(l -> System.out.println(
-        //     datosLibro().formatted(
-        //         l.getTitulo(),
-        //         l.getAutor().getNombre(),
-        //         l.getIdioma(),
-        //         l.getNumeroDescargas()
-        //     )
-        // ));
+        libros = repositoryLibro.findAll();
+
+        var headerListaLibros = """
+                -------------------------------------------
+                    Libros almacenados en literalura
+                -------------------------------------------
+                """;
+        System.out.println("\n" + headerListaLibros + "\n");
+
+        if(libros.isEmpty()){
+            System.out.println("No hay libros registrados en literalura...\n");
+        }else{
+            var cuentaLibros = repositoryLibro.count();
+            
+            libros.forEach(l -> System.out.println(
+                datosLibro().formatted(
+                    l.getTitulo(),
+                    l.getAutor().getNombre(),
+                    l.getIdioma(),
+                    l.getNumeroDescargas()
+                )
+            ));
+    
+            System.out.println("Total de libros: %s\n".formatted(cuentaLibros));
+        }
     }
 
     private void consultarAutoresVivosPorAnio() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'consultarAutoresVivosPorAnio'");
+        try {
+            System.out.println("\nIngrese año a consultar:\n");
+            int anio = teclado.nextInt();
+    
+            List<Autor> autores = repositoryAutor.obtenerAutorVivoAnio(anio);
+    
+            var headerAnioAutor = """
+                    -------------------------------------------
+                        Autores vivos para el año ingresado
+                    -------------------------------------------
+                    """;
+            System.out.println("\n" + headerAnioAutor);
+    
+            if(autores.isEmpty()){
+                System.out.println("No hay autores vivos para el año ingresado...\n");
+            }else{
+                var muestraAutor = """
+                    -------------------------
+                        Datos del Autor
+                    -------------------------
+                    Nombre            : %s
+                    Año Nacimiento    : %s
+                    Año Fallecimiento : %s
+                    Libros            :
+                    """;
+                
+                autores.forEach(a -> System.out.println(
+                    muestraAutor.formatted(
+                        a.getNombre(),
+                        a.getAnioNacimiento(),
+                        a.getAnioFallecimiento()
+                    )
+                ));
+    
+                System.out.println("Total de autores: %s\n".formatted(autores.size()));
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("\nEl año ingresado no es un valor valido...\n");
+            teclado.nextLine();
+        }
     }
 
     private void consultarLibrosPorIdioma() {
@@ -122,48 +177,47 @@ public class Principal {
         Optional<DatosLibro> libroBuscado = datosBusqueda.libros().stream()
             .filter(l -> l.titulo().toLowerCase().contains(nombreLibro.toLowerCase()))
             .findFirst();
-
-        DatosAutor datosAutor = libroBuscado.get().autor().get(0);
-        // List<Autor> autores = datosAutor.stream()
-        //     .map(a -> new Autor(a))
-        //     .collect(Collectors.toList());
-    
+            
         if (libroBuscado.isPresent()) {
-            System.out.println("\nLibro encontrado:\n");
-
+            DatosAutor datosAutor = libroBuscado.get().autor().get(0);
             
-            System.out.println(datosLibro().formatted(
-                libroBuscado.get().titulo(), 
-                libroBuscado.get().autor().get(0).nombre(), 
-                libroBuscado.get().idioma().get(0), 
-                libroBuscado.get().numeroDescargas()
-            ));
-            
-            // Libro libro = new Libro(libroBuscado.get());
-            // libro.setAutor(autores.get(0));
-            // repository.save(libro);
-            
-            //Esta parte valida previamente si el autor existe
-            //para guardar solo el libro en caso de que sea necesario
-            autor = repositoryAutor.findByNombre(datosAutor.nombre());
-            libros = libroBuscado.stream()
-                .map(l -> new Libro(l))
-                .collect(Collectors.toList());
-
-            if(autor.isPresent()){
-                Libro libro = new Libro(libroBuscado.get());
-                libro.setAutor(autor.get());
-                repositoryLibro.save(libro);
+            //Valida existencia libro en la DB
+            if(repositoryLibro.findByIdLibro(libroBuscado.get().idLibro()).isPresent()){
+                System.out.println("\nLibro ya se encuentra guardado en la base de datos...\n");
             }else{
-                Autor autorClass = new Autor(datosAutor);
-                autorClass.setLibros(libros);
-                repositoryAutor.save(autorClass);
-            }
+                System.out.println("\nLibro encontrado:\n");
+    
+                
+                System.out.println(datosLibro().formatted(
+                    libroBuscado.get().titulo(), 
+                    libroBuscado.get().autor().get(0).nombre(), 
+                    libroBuscado.get().idioma().get(0), 
+                    libroBuscado.get().numeroDescargas()
+                ));
+                
+                //Esta parte valida previamente si el autor existe
+                //para guardar solo el libro en caso de que sea necesario
+                autor = repositoryAutor.findByNombre(datosAutor.nombre());
+                
+                if(autor.isPresent()){
+                    libro = new Libro(libroBuscado.get());
+                    libro.setAutor(autor.get());
+                    repositoryLibro.save(libro);
+                }else{
+                    libros = libroBuscado.stream()
+                        .map(l -> new Libro(l))
+                        .collect(Collectors.toList());
 
-            System.out.println("\n Se ha guardado el libro en la base de datos...\n");
+                    Autor autorClass = new Autor(datosAutor);
+                    autorClass.setLibros(libros);
+                    repositoryAutor.save(autorClass);
+                }
+    
+                System.out.println("\n Se ha guardado el libro en la base de datos...\n");
+            }
         } else {
-            System.out.println("No se ha encontrado el libro\n");
-        }        
+            System.out.println("\nNo se ha encontrado el libro o no es una busqueda valida...\n");
+        }
     }
 
     private String datosLibro(){
