@@ -21,8 +21,8 @@ public class Autor {
 
     @Column(unique = true)
     private String nombre;
-    private String anioNacimiento;
-    private String anioFallecimiento;
+    private Integer anioNacimiento;
+    private Integer anioFallecimiento;
 
     @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Libro> libros;
@@ -44,19 +44,19 @@ public class Autor {
         this.nombre = nombre;
     }
 
-    public String getAnioNacimiento() {
+    public Integer getAnioNacimiento() {
         return anioNacimiento;
     }
 
-    public void setAnioNacimiento(String anioNacimiento) {
+    public void setAnioNacimiento(Integer anioNacimiento) {
         this.anioNacimiento = anioNacimiento;
     }
 
-    public String getAnioFallecimiento() {
+    public Integer getAnioFallecimiento() {
         return anioFallecimiento;
     }
 
-    public void setAnioFallecimiento(String anioFallecimiento) {
+    public void setAnioFallecimiento(Integer anioFallecimiento) {
         this.anioFallecimiento = anioFallecimiento;
     }
 
