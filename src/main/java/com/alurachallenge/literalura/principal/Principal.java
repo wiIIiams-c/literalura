@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.alurachallenge.literalura.model.Autor;
 import com.alurachallenge.literalura.model.Datos;
 import com.alurachallenge.literalura.model.DatosAutor;
+import com.alurachallenge.literalura.model.DatosIdioma;
 import com.alurachallenge.literalura.model.DatosLibro;
 import com.alurachallenge.literalura.model.Libro;
 import com.alurachallenge.literalura.repository.AutorRepository;
@@ -18,6 +19,7 @@ import com.alurachallenge.literalura.service.ConvierteDatos;
 
 public class Principal {
     private static final String URL_BASE = "https://gutendex.com/books/";
+    private static final String URL_LANGUAGE_CODE = "https://wiiiiams-c.github.io/language-iso-639-1-json-spanish/language-iso-639-1.json";
     private ConsumoAPI consumoApi = new ConsumoAPI();
     private ConvierteDatos conversor = new ConvierteDatos();
     private Scanner teclado = new Scanner(System.in);
@@ -25,6 +27,7 @@ public class Principal {
     private AutorRepository repositoryAutor;
     private Libro libro;
     private List<Libro> libros;
+    private List<Autor> autores;
     private Optional<Autor> autor;
 
     public Principal(AutorRepository repositoryAutor, LibroRepository repositoryLibro) {
@@ -99,7 +102,7 @@ public class Principal {
         if(libros.isEmpty()){
             System.out.println("No hay libros registrados en literalura...\n");
         }else{
-            var cuentaLibros = repositoryLibro.count();
+            var cuentaLibros = libros.size();
             
             libros.forEach(l -> System.out.println(
                 datosLibro().formatted(
@@ -119,7 +122,7 @@ public class Principal {
             System.out.println("\nIngrese año a consultar:\n");
             int anio = teclado.nextInt();
     
-            List<Autor> autores = repositoryAutor.obtenerAutorVivoAnio(anio);
+            autores = repositoryAutor.obtenerAutorVivoAnio(anio);
     
             var headerAnioAutor = """
                     -------------------------------------------
@@ -131,23 +134,7 @@ public class Principal {
             if(autores.isEmpty()){
                 System.out.println("No hay autores vivos para el año ingresado...\n");
             }else{
-                var muestraAutor = """
-                    -------------------------
-                        Datos del Autor
-                    -------------------------
-                    Nombre            : %s
-                    Año Nacimiento    : %s
-                    Año Fallecimiento : %s
-                    Libros            :
-                    """;
-                
-                autores.forEach(a -> System.out.println(
-                    muestraAutor.formatted(
-                        a.getNombre(),
-                        a.getAnioNacimiento(),
-                        a.getAnioFallecimiento()
-                    )
-                ));
+                datosAutor(autores);
     
                 System.out.println("Total de autores: %s\n".formatted(autores.size()));
             }
@@ -158,13 +145,36 @@ public class Principal {
     }
 
     private void consultarLibrosPorIdioma() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'consultarLibrosPorIdioma'");
+        // var idiomas = repositoryLibro.obtenerListaUnicaIdioma();
+
+        // idiomas.stream()
+        //     .forEach(System.out::println);
+
+        var jsonIdiomas = consumoApi.obtenerDatos(URL_LANGUAGE_CODE);
+        var datosIdioma = conversor.obtenerDatos(jsonIdiomas, DatosIdioma.class);
+        
+        datosIdioma.idiomas().stream()
+            .forEach(System.out::println);
     }
 
     private void listarAutores() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'listarAutores'");
+        var headerListaAutor = """
+                -------------------------------------------
+                    Autores registrados en literalura
+                -------------------------------------------
+                """;
+        System.out.println("\n" + headerListaAutor + "\n");
+        
+        autores = repositoryAutor.findAllByOrderByNombreAsc();
+
+        if(autores.isEmpty()){
+            System.out.println("No hay autores registrados en literalura...\n");
+        }else{
+            var cuentaAutores = autores.size();
+            datosAutor(autores);
+
+            System.out.println("Total de autores: %s\n".formatted(cuentaAutores));
+        }
     }
 
     private void consultarLibro() {
@@ -232,5 +242,28 @@ public class Principal {
             """;
 
         return muestraLibro;
+    }
+
+    private void datosAutor(List<Autor> autorLista){
+        var muestraAutor = """
+            -------------------------
+                Datos del Autor
+            -------------------------
+            Nombre            : %s
+            Año Nacimiento    : %s
+            Año Fallecimiento : %s
+            Libros            : %s
+            """;
+
+        autorLista.forEach(a -> System.out.println(
+            muestraAutor.formatted(
+                a.getNombre(),
+                (a.getAnioNacimiento()==null?"N/D":a.getAnioNacimiento()),
+                (a.getAnioFallecimiento()==null?"N/D":a.getAnioFallecimiento()),
+                repositoryLibro.obtenerLibrosPorAutor(a.getIdAutor()).stream()
+                    .map(l -> l.getTitulo())
+                    .collect(Collectors.joining(" | ", "[", "]"))
+            )
+        ));
     }
 }
