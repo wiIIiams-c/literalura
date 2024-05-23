@@ -1,5 +1,6 @@
 package com.alurachallenge.literalura.principal;
 
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,7 @@ import com.alurachallenge.literalura.model.Datos;
 import com.alurachallenge.literalura.model.DatosAutor;
 import com.alurachallenge.literalura.model.DatosIdioma;
 import com.alurachallenge.literalura.model.DatosLibro;
+import com.alurachallenge.literalura.model.Idioma;
 import com.alurachallenge.literalura.model.Libro;
 import com.alurachallenge.literalura.repository.AutorRepository;
 import com.alurachallenge.literalura.repository.LibroRepository;
@@ -145,16 +147,45 @@ public class Principal {
     }
 
     private void consultarLibrosPorIdioma() {
-        // var idiomas = repositoryLibro.obtenerListaUnicaIdioma();
-
-        // idiomas.stream()
-        //     .forEach(System.out::println);
-
+        var idiomasLibro = repositoryLibro.obtenerListaUnicaIdioma();
         var jsonIdiomas = consumoApi.obtenerDatos(URL_LANGUAGE_CODE);
         var datosIdioma = conversor.obtenerDatos(jsonIdiomas, DatosIdioma.class);
+        List<Idioma> idiomaDisponible = new ArrayList<>();
+
+        for (String idiomaCodigo : idiomasLibro) {
+            var di = datosIdioma.idiomas().stream().filter(i -> i.codIdioma().contains(idiomaCodigo)).collect(Collectors.toList());
+            idiomaDisponible.add(di.get(0));
+        }
         
-        datosIdioma.idiomas().stream()
-            .forEach(System.out::println);
+        var headerListaIdiomas = """
+            -------------------------------------------
+                Lista idiomas disponibles a buscar
+            -------------------------------------------
+            """;
+        System.out.println("\n"+headerListaIdiomas);
+        idiomaDisponible.forEach(i -> System.out.println(i.codIdioma() + " -> " + i.idioma()));
+        System.out.println("\nEscribe el codigo de idioma a buscar ej: en\n");
+
+        String inputCodIdioma = teclado.nextLine();
+
+        libros = repositoryLibro.findByIdioma(inputCodIdioma);
+
+        if(libros.isEmpty()){
+            System.out.println("No hay libros en ese idioma en literalura...\n");
+        }else{
+            var cuentaLibros = libros.size();
+            
+            libros.forEach(l -> System.out.println(
+                datosLibro().formatted(
+                    l.getTitulo(),
+                    l.getAutor().getNombre(),
+                    l.getIdioma(),
+                    l.getNumeroDescargas()
+                )
+            ));
+    
+            System.out.println("Total de libros: %s\n".formatted(cuentaLibros));
+        }
     }
 
     private void listarAutores() {
@@ -232,6 +263,7 @@ public class Principal {
 
     private String datosLibro(){
         var muestraLibro = """
+            
             -------------------------
                 Datos del Libro
             -------------------------
