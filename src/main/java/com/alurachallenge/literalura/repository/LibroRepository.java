@@ -10,6 +10,7 @@ import com.alurachallenge.literalura.model.Libro;
 
 public interface LibroRepository extends JpaRepository<Libro, Long>{
     Optional<Libro> findByIdLibro(Long idLibro);
+    List<Libro> findByIdioma(String idioma);
 
     @Query("SELECT DISTINCT l.idioma from Libro l ORDER BY l.idioma")
     List<String> obtenerListaUnicaIdioma();
