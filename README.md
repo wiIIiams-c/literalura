@@ -38,7 +38,7 @@ Deberas agregar las siguientes variables de entorno para que la aplicacion pueda
 ## Aplicación
 
 ### *Menu*
-Literalura consta de 5 opciones con las cuales podras interactuar,las cuales la imagen muestra a continuacion:
+Literalura consta de 5 opciones con las que podras interactuar, abajo imagen con las opciones:
 
 <p width="100%">
     <img width="25%" src="https://storage.googleapis.com/media-github-readme/literalura-01.png">
