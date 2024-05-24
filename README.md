@@ -72,3 +72,9 @@ Esta opcion muestra una lista de idiomas disponibles a partir de los que estan a
 <p width="100%">
     <img width="25%" src="https://storage.googleapis.com/media-github-readme/literalura-06.png">
 </p>
+
+## Alura Challenge Literalura Badge
+
+<p align="center" width="100%">
+    <img width="50%" src="https://storage.googleapis.com/media-github-readme/badge-literalura.png">
+</p>
