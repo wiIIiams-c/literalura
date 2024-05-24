@@ -3,6 +3,7 @@ package com.alurachallenge.literalura.principal;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.LongSummaryStatistics;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -55,6 +56,8 @@ public class Principal {
                     3 -> Listar autores registrados
                     4 -> Listar autores vivos por X año
                     5 -> Listar libros por idioma
+                    6 -> Top 10 Libros Descargados
+                    7 -> Algunas estadisticas
     
                     0 -> Salir
                     """;
@@ -87,12 +90,69 @@ public class Principal {
                 case 5:
                     consultarLibrosPorIdioma();
                     break;
+                case 6:
+                    listarTopTenLibros();
+                    break;
+                case 7:
+                    muestraEstadisticasLiteralura();
+                    break;
                 default:
                     System.out.println("\nOpcion Invalida\n");
             }
         }
     }
     
+    private void muestraEstadisticasLiteralura() {
+        libros = repositoryLibro.findAll();
+
+        var headerEstadisticas = """
+                -------------------------------------------
+                    Datos estadisticos Literalura
+                -------------------------------------------
+
+                Total de libros       : %s
+                Libro mas descargado  : %s
+                Libro menos descargado: %s
+                Media de descargas    : %s
+
+                """;
+
+        LongSummaryStatistics estadisticas = libros.stream()
+            .filter(l -> l.getNumeroDescargas() > 0)
+            .collect(Collectors.summarizingLong(Libro::getNumeroDescargas));
+
+        System.out.println(headerEstadisticas.formatted(
+            estadisticas.getCount(),
+            estadisticas.getMax() + " -> " + libros.get(0).getTitulo(),
+            estadisticas.getMin() + " -> " + libros.get(9).getTitulo(),
+            Math.round(estadisticas.getAverage())
+        ));
+    }
+
+    private void listarTopTenLibros() {
+        libros = repositoryLibro.findTop10ByOrderByNumeroDescargasDesc();
+
+        if(libros.isEmpty()){
+            System.out.println("\nNo hay libros para mostrar en este top...\n");
+        }else{
+            var headerTopTen = """
+                -------------------------------------------
+                    Top 10 libros mas descargados
+                -------------------------------------------
+                """;
+            System.out.println("\n" + headerTopTen + "\n");
+
+            libros.forEach(l -> System.out.println(
+                datosLibro().formatted(
+                    l.getTitulo(),
+                    l.getAutor().getNombre(),
+                    l.getIdioma(),
+                    l.getNumeroDescargas()
+                )
+            ));
+        }
+    }
+
     private void listarLibros() {
         libros = repositoryLibro.findAll();
 
