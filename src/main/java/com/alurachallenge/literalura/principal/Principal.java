@@ -5,6 +5,8 @@ import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.alurachallenge.literalura.model.Autor;
@@ -152,39 +154,47 @@ public class Principal {
         var datosIdioma = conversor.obtenerDatos(jsonIdiomas, DatosIdioma.class);
         List<Idioma> idiomaDisponible = new ArrayList<>();
 
-        for (String idiomaCodigo : idiomasLibro) {
-            var di = datosIdioma.idiomas().stream().filter(i -> i.codIdioma().contains(idiomaCodigo)).collect(Collectors.toList());
-            idiomaDisponible.add(di.get(0));
-        }
-        
-        var headerListaIdiomas = """
-            -------------------------------------------
-                Lista idiomas disponibles a buscar
-            -------------------------------------------
-            """;
-        System.out.println("\n"+headerListaIdiomas);
-        idiomaDisponible.forEach(i -> System.out.println(i.codIdioma() + " -> " + i.idioma()));
-        System.out.println("\nEscribe el codigo de idioma a buscar ej: en\n");
-
-        String inputCodIdioma = teclado.nextLine();
-
-        libros = repositoryLibro.findByIdioma(inputCodIdioma);
-
-        if(libros.isEmpty()){
-            System.out.println("No hay libros en ese idioma en literalura...\n");
+        if(idiomasLibro.isEmpty()){
+            System.out.println("\nNo hay libros por ende no hay idiomas para listar...\n");
         }else{
-            var cuentaLibros = libros.size();
+            for (String idiomaCodigo : idiomasLibro) {
+                var di = datosIdioma.idiomas().stream().filter(i -> i.codIdioma().contains(idiomaCodigo)).collect(Collectors.toList());
+                idiomaDisponible.add(di.get(0));
+            }
             
-            libros.forEach(l -> System.out.println(
-                datosLibro().formatted(
-                    l.getTitulo(),
-                    l.getAutor().getNombre(),
-                    l.getIdioma(),
-                    l.getNumeroDescargas()
-                )
-            ));
+            var headerListaIdiomas = """
+                -------------------------------------------
+                    Lista idiomas disponibles a buscar
+                -------------------------------------------
+                """;
+            System.out.println("\n"+headerListaIdiomas);
+            idiomaDisponible.forEach(i -> System.out.println(i.codIdioma() + " -> " + i.idioma()));
+            System.out.println("\nEscribe el codigo de idioma a buscar ej: en\n");
     
-            System.out.println("Total de libros: %s\n".formatted(cuentaLibros));
+            String inputCodIdioma = teclado.nextLine();
+
+            if(revisaInputTeclado(inputCodIdioma)){
+                System.out.println("\nDebe ingresar algun codigo de idioma, lo que ingreso no es valido...\n");
+            }else{
+                libros = repositoryLibro.findByIdioma(inputCodIdioma);
+        
+                if(libros.isEmpty()){
+                    System.out.println("\nNo hay libros en ese idioma en literalura...\n");
+                }else{
+                    var cuentaLibros = libros.size();
+                    
+                    libros.forEach(l -> System.out.println(
+                        datosLibro().formatted(
+                            l.getTitulo(),
+                            l.getAutor().getNombre(),
+                            l.getIdioma(),
+                            l.getNumeroDescargas()
+                        )
+                    ));
+            
+                    System.out.println("Total de libros: %s\n".formatted(cuentaLibros));
+                }
+            }
         }
     }
 
@@ -227,7 +237,6 @@ public class Principal {
                 System.out.println("\nLibro ya se encuentra guardado en la base de datos...\n");
             }else{
                 System.out.println("\nLibro encontrado:\n");
-    
                 
                 System.out.println(datosLibro().formatted(
                     libroBuscado.get().titulo(), 
@@ -297,5 +306,12 @@ public class Principal {
                     .collect(Collectors.joining(" | ", "[", "]"))
             )
         ));
+    }
+
+    private boolean revisaInputTeclado(String inputTeclado){
+        //revisa si la variable recibida es un numero postitivo o negativo
+        Pattern expresionRegular = Pattern.compile("^[\\+-]?\\d+$");
+        Matcher haceMatch = expresionRegular.matcher(inputTeclado);
+        return haceMatch.matches();
     }
 }
