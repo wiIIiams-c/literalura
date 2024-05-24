@@ -142,14 +142,7 @@ public class Principal {
                 """;
             System.out.println("\n" + headerTopTen + "\n");
 
-            libros.forEach(l -> System.out.println(
-                datosLibro().formatted(
-                    l.getTitulo(),
-                    l.getAutor().getNombre(),
-                    l.getIdioma(),
-                    l.getNumeroDescargas()
-                )
-            ));
+            datosLibro(libros);
         }
     }
 
@@ -168,14 +161,7 @@ public class Principal {
         }else{
             var cuentaLibros = libros.size();
             
-            libros.forEach(l -> System.out.println(
-                datosLibro().formatted(
-                    l.getTitulo(),
-                    l.getAutor().getNombre(),
-                    l.getIdioma(),
-                    l.getNumeroDescargas()
-                )
-            ));
+            datosLibro(libros);
     
             System.out.println("Total de libros: %s\n".formatted(cuentaLibros));
         }
@@ -243,14 +229,7 @@ public class Principal {
                 }else{
                     var cuentaLibros = libros.size();
                     
-                    libros.forEach(l -> System.out.println(
-                        datosLibro().formatted(
-                            l.getTitulo(),
-                            l.getAutor().getNombre(),
-                            l.getIdioma(),
-                            l.getNumeroDescargas()
-                        )
-                    ));
+                    datosLibro(libros);
             
                     System.out.println("Total de libros: %s\n".formatted(cuentaLibros));
                 }
@@ -298,12 +277,23 @@ public class Principal {
             }else{
                 System.out.println("\nLibro encontrado:\n");
                 
-                System.out.println(datosLibro().formatted(
+                var libroHeaderEncontrado = """
+                    -------------------------
+                        Datos del Libro
+                    -------------------------
+                    Titulo   : %s
+                    Autor    : %s
+                    Idiomas  : %s
+                    Descargas: %s
+                    """;
+
+                System.out.println(libroHeaderEncontrado.formatted(
                     libroBuscado.get().titulo(), 
                     libroBuscado.get().autor().get(0).nombre(), 
                     libroBuscado.get().idioma().get(0), 
                     libroBuscado.get().numeroDescargas()
-                ));
+                    )
+                );
                 
                 //Esta parte valida previamente si el autor existe
                 //para guardar solo el libro en caso de que sea necesario
@@ -330,7 +320,7 @@ public class Principal {
         }
     }
 
-    private String datosLibro(){
+    private void datosLibro(List<Libro> listado){
         var muestraLibro = """
             
             -------------------------
@@ -342,7 +332,14 @@ public class Principal {
             Descargas: %s
             """;
 
-        return muestraLibro;
+        listado.forEach(l -> System.out.println(
+            muestraLibro.formatted(
+                l.getTitulo(),
+                l.getAutor().getNombre(),
+                l.getIdioma(),
+                l.getNumeroDescargas()
+            )
+        ));
     }
 
     private void datosAutor(List<Autor> autorLista){
